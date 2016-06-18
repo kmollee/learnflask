@@ -2,17 +2,23 @@ from flask import (
     Flask, render_template, redirect, url_for, request, session, flash, g)
 from functools import wraps
 import sqlite3
-
+from flask_sqlalchemy import SQLAlchemy
 # create the application object
 app = Flask(__name__)
 
 app.secret_key = 'my secret'
-app.database = 'sample.db'
+# app.database = 'sample.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+
+# create the sqlalchemy object
+db = SQLAlchemy(app)
 
 
-def connect_db():
-    return sqlite3.connect(app.database)
+# def connect_db():
+#     return sqlite3.connect(app.database)
 
+from models import *
 
 def login_require(f):
     @wraps(f)
@@ -28,10 +34,7 @@ def login_require(f):
 @app.route('/')
 @login_require
 def home():
-    g.db = connect_db()
-    cur = g.db.execute('select * from posts')
-    posts = [dict(title=row[0], description=row[1]) for row in cur.fetchall()]
-    g.db.close()
+    posts = db.session.query(BlogPost).all()
     return render_template("index.html", posts=posts)
 
 
