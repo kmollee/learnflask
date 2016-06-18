@@ -1,10 +1,18 @@
 from flask import (
-    Flask, render_template, redirect, url_for, request, session, flash)
+    Flask, render_template, redirect, url_for, request, session, flash, g)
 from functools import wraps
+import sqlite3
 
+# create the application object
 app = Flask(__name__)
 
 app.secret_key = 'my secret'
+app.database = 'sample.db'
+
+
+def connect_db():
+    return sqlite3.connect(app.database)
+
 
 def login_require(f):
     @wraps(f)
@@ -16,11 +24,15 @@ def login_require(f):
             return redirect(url_for('login'))
     return wrap
 
-
+# http://flask.pocoo.org/docs/0.11/api/#flask.g
 @app.route('/')
 @login_require
 def home():
-    return render_template("index.html")
+    g.db = connect_db()
+    cur = g.db.execute('select * from posts')
+    posts = [dict(title=row[0], description=row[1]) for row in cur.fetchall()]
+    g.db.close()
+    return render_template("index.html", posts=posts)
 
 
 @app.route('/welcome')
