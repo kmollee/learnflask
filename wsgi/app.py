@@ -1,24 +1,19 @@
 from flask import (
     Flask, render_template, redirect, url_for, request, session, flash, g)
 from functools import wraps
-import sqlite3
 from flask_sqlalchemy import SQLAlchemy
 # create the application object
 app = Flask(__name__)
 
-app.secret_key = 'my secret'
-# app.database = 'sample.db'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///posts.db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-
+# load config from file obj
+app.config.from_object('config.DevelopmentConfig')
+# load config from os env variable
+# app.config.from_object(os.environ['APP_SETTINGS'])
 # create the sqlalchemy object
 db = SQLAlchemy(app)
 
-
-# def connect_db():
-#     return sqlite3.connect(app.database)
-
 from models import *
+
 
 def login_require(f):
     @wraps(f)
@@ -31,6 +26,8 @@ def login_require(f):
     return wrap
 
 # http://flask.pocoo.org/docs/0.11/api/#flask.g
+
+
 @app.route('/')
 @login_require
 def home():
