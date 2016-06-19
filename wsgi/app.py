@@ -2,9 +2,10 @@ from flask import (
     Flask, render_template, redirect, url_for, request, session, flash, g)
 from functools import wraps
 from flask_sqlalchemy import SQLAlchemy
+from flask_bcrypt import Bcrypt
 # create the application object
 app = Flask(__name__)
-
+bcrypt = Bcrypt(app)
 # load config from file obj
 app.config.from_object('config.DevelopmentConfig')
 # load config from os env variable
